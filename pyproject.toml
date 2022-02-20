@@ -4,6 +4,10 @@ version = "0.1.1"
 description = "Useful helper functions for CSE 163: Intermediate Data Programming course content. https://cse163.github.io/book/"
 authors = ["Hunter Schafer <hschafer@cs.washington.edu>"]
 license = "MIT"
+readme = "README.md"
+homepage = "https://cse163.github.io/book/#"
+repository = "https://github.com/cse163/cse163_utils"
+documentation = "https://github.com/cse163/cse163_utils"
 
 [tool.poetry.dependencies]
 python = "^3.8"
