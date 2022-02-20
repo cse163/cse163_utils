@@ -1,7 +1,15 @@
 import math
 
+from typing import Any
 
-def check_approx_equals(expected, received):
+import numpy as np
+import pandas as pd
+
+
+TOLERANCE = 0.001
+
+
+def check_approx_equals(expected: Any, received: Any):
     """
     Checks received against expected, and returns whether or
     not they match (True if they do, False otherwise).
@@ -22,20 +30,42 @@ def check_approx_equals(expected, received):
                 all([check_approx_equals(v1, v2)
                     for v1, v2 in zip(expected, received)])
         elif type(expected) == float:
-            return math.isclose(expected, received, abs_tol=0.001)
+            return math.isclose(expected, received, abs_tol=TOLERANCE)
+        elif type(expected) == np.ndarray:
+            return np.allclose(expected, received, abs_tol=TOLERANCE, equal_nan=True)
+        elif type(expected) == pd.DataFrame:
+            try:
+                pd.testing.assert_frame_equal(expected, received, atol=TOLERANCE)
+                return True
+            except AssertionError as e:
+                return False
+        elif type(expected) == pd.Series:
+            try:
+                pd.testing.assert_series_equal(expected, received, atol=TOLERANCE)
+                return True
+            except AssertionError as e:
+                return False
         else:
             return expected == received
     except Exception as e:
-        print(f'EXCEPTION: Raised when checking check_approx_equals {e}')
+        print(f"EXCEPTION: Raised when checking check_approx_equals {e}")
         return False
 
 
-def assert_equals(expected, received):
+def assert_equals(expected: Any, received: Any):
     """
     Checks received against expected, throws an AssertionError
     if they don't match. If the argument is a float, will do an approximate
     check. If the arugment is a data structure will do an approximate check
     on all of its contents.
     """
-    assert check_approx_equals(expected, received), \
-        f'Failed: Expected {expected}, but received {received}'
+
+    if type(expected) == str:
+        # Kind of dumb, but we want to include explicit quotes here to be less confusing
+        err_msg = f'Failed: Expected "{expected}", but received "{received}"'
+    elif type(expected) in [np.ndarray, pd.Series, pd.DataFrame]:
+        err_msg = f'Failed: Expected\n{expected}\n\nbut received\n{received}'
+    else:
+        err_msg = f'Failed: Expected {expected}, but received {received}'
+
+    assert check_approx_equals(expected, received), err_msg
